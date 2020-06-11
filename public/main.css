@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+}
+a {
+    all: unset;
+}
+
+.link-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#canvas {
+    height: 100vh;
+}
