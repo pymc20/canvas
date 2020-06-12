@@ -2,7 +2,7 @@ import react, { useEffect } from 'react'
 import * as THREE from 'three'
 
 export default function Fps() {
-    function test() {
+    function fpsRender() {
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(
             75,
@@ -14,11 +14,75 @@ export default function Fps() {
         const renderer = new THREE.WebGLRenderer()
         const canvas = document.getElementById('canvas')
         renderer.setSize(canvas.offsetWidth, canvas.offsetHeight)
-        console.log(canvas)
         canvas.appendChild(renderer.domElement)
 
-        const geometry = new THREE.BoxGeometry()
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        const vertices = new Float32Array([
+            0.0,
+            0.0,
+            0.0,
+            2.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            2.0,
+            0.0,
+            2.0,
+            2.0,
+            0.0,
+
+            0.0,
+            0.0,
+            1.0,
+            2.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.0,
+            2.0,
+            1.0,
+            2.0,
+            2.0,
+            1.0,
+
+            0.0,
+            0.0,
+            2.0,
+            2.0,
+            0.0,
+            2.0,
+            0.0,
+            1.0,
+            2.0,
+            1.0,
+            1.0,
+            2.0,
+            0.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+        ])
+
+        const geometry = new THREE.BufferGeometry()
+        geometry.setAttribute(
+            'position',
+            new THREE.BufferAttribute(vertices, 3)
+        )
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+        })
         const cube = new THREE.Mesh(geometry, material)
         scene.add(cube)
 
@@ -37,7 +101,7 @@ export default function Fps() {
     }
 
     useEffect(() => {
-        test()
+        fpsRender()
     })
     return <div id="canvas" />
 }
