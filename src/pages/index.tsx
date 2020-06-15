@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { withRouter } from 'next/router'
 let pagesState = []
 
-function Home({ pages }) {
+function Home(props) {
+    const { pages } = props
+    console.log('pages : ', pages)
     pagesState = pages.length > 0 ? pages : pagesState
-    console.log('pages : ', pagesState)
     return (
         <div className="container">
             <Head>

@@ -1,6 +1,7 @@
-import '../public/main.css'
+import '../../public/main.css'
 import React from 'react'
 import fs from 'fs'
+
 const glob: any = require('glob')
 const path: any = require('path')
 let pages: any = []
