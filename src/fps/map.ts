@@ -1,23 +1,25 @@
 import * as THREE from 'three'
-import Bullet from './bullet'
 
 export default class GameMap {
     map: Array<string>
     ZSIZE: number
     XSIZE: number
     meshMap: Array<any>
-    materials: Array<THREE.MeshPhongMaterial>
+    materials: Array<THREE.MeshBasicMaterial>
     scene: THREE.Scene
     floor: THREE.Mesh
     HORIZONTAL_UNIT: number
     VERTICAL_UNIT: number
     spawnPoints: Array<THREE.Vector3>
-    bullets: Array<Bullet>
 
     constructor(scene: THREE.Scene) {
         this.scene = scene
         this.HORIZONTAL_UNIT = 100
         this.VERTICAL_UNIT = 100
+        this.map = new Array()
+        this.meshMap = new Array()
+        this.materials = new Array()
+        this.spawnPoints = new Array()
         this.init()
     }
     init() {
@@ -31,20 +33,20 @@ export default class GameMap {
             this.map.push('   XXXX XX       XXXX    S   X')
             this.map.push('      X XX       X  X        X')
             this.map.push('   XXXX XXX     XX  X        X')
-            this.map.push('   X      XX   XXXXXXTTXX  XXX')
-            this.map.push('   X      XTTTTTXXXTTTTXX  X  ')
-            this.map.push('   XX  S  XTTTTTXXTTTTTXX  XXX')
-            this.map.push('XXXXX     XTTTTTXTTTTTTX     X')
-            this.map.push('X      XTTXTTTTTTTTTTTTX     X')
-            this.map.push('X  S  XXTTTTTTTTXTTTTTXX  S  X')
-            this.map.push('X     XTTTTTTTTTXTTTTTX      X')
-            this.map.push('X     TTTTTTTTTTXXXXTTX  XXXXX')
-            this.map.push('X     XTTTTTTTTTX X      X    ')
-            this.map.push('XX  XXXTTTTTTTTTX X      X    ')
-            this.map.push(' X  X XTTTTTTTTTX X      X    ')
+            this.map.push('   X      XX   XXXXXX  XX  XXX')
+            this.map.push('   X      X     XXX    XX  X  ')
+            this.map.push('   XX  S  X     XX     XX  XXX')
+            this.map.push('XXXXX     X     X      X     X')
+            this.map.push('X      X  X            X     X')
+            this.map.push('X  S  XX        X     XX  S  X')
+            this.map.push('X     X         X     X      X')
+            this.map.push('X               XXXX  X  XXXXX')
+            this.map.push('X     X         X X      X    ')
+            this.map.push('XX  XXX         X X      X    ')
+            this.map.push(' X  X X         X X      X    ')
             this.map.push(' X  XXX         X X      X    ')
             this.map.push(' X             XXXX      XX   ')
-            this.map.push(' XXXXX    T               X   ')
+            this.map.push(' XXXXX                    X   ')
             this.map.push('     X                 S  X   ')
             this.map.push('     XX   S  XXXXXXXX     X   ')
             this.map.push('      XX    XX      XXXXXXX   ')
@@ -53,17 +55,17 @@ export default class GameMap {
         this.ZSIZE = this.map.length * this.HORIZONTAL_UNIT
         this.XSIZE = this.map[0].length * this.HORIZONTAL_UNIT
         this.meshMap = new Array(this.map.length)
-        for (let i = 0; i < 8; i++) {
-            this.materials.push(
-                new THREE.MeshPhongMaterial({
-                    color: new THREE.Color().setHSL(
-                        Math.random() * 0.2 + 0.3,
-                        0.5,
-                        Math.random() * 0.25 + 0.75
-                    ),
-                })
-            )
-        }
+
+        // const loader = new THREE.CubeTextureLoader()
+        const loader = new THREE.TextureLoader()
+
+        const texture = loader.load('brick.jpeg')
+        this.materials.push(
+            new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                map: texture,
+            })
+        )
     }
     setupMap() {
         for (var i = 0, rows = this.map.length; i < rows; i++) {
@@ -83,10 +85,8 @@ export default class GameMap {
         this.scene.add(this.floor)
     }
 
-    getMaterials() {
-        return this.materials[
-            Math.floor(Math.random() * this.materials.length)
-        ].clone()
+    getMaterials(number) {
+        return this.materials[number].clone()
     }
 
     addVoxel(type: string, row: number, col: number): THREE.Mesh {
@@ -108,12 +108,8 @@ export default class GameMap {
             case 'S':
                 this.spawnPoints.push(new THREE.Vector3(x, 0, z))
                 break
-            case 'T':
-                mesh = new THREE.Mesh(WALL.clone(), this.getMaterials())
-                mesh.position.set(x, this.VERTICAL_UNIT * 0.5, z)
-                break
             case 'X':
-                mesh = new THREE.Mesh(WALL.clone(), this.getMaterials())
+                mesh = new THREE.Mesh(WALL.clone(), this.getMaterials(0))
                 mesh.scale.y = 3
                 mesh.position.set(x, this.VERTICAL_UNIT * 1.5, z)
                 break
@@ -122,116 +118,5 @@ export default class GameMap {
             this.scene.add(mesh)
         }
         return mesh
-    }
-    checkPlayerCollision() {
-        const cell = new MapCell()
-        return function (player) {
-            player.collideFloor(this.floor.position.y)
-            this.mapCellFromPosition(player.position, cell)
-            switch (cell.char) {
-                case ' ':
-                case 'S':
-                    if (
-                        Math.floor(player.position.y - player.cameraHeight) <=
-                        this.floor.position.y
-                    ) {
-                        player.canJump = true
-                    }
-                    break
-                case 'T':
-                    const topPosition =
-                        cell.mesh.position.y + this.VERTICAL_UNIT * 0.5
-                    if (player.collideFloor(topPosition)) {
-                        player.canJump = true
-                    } else if (
-                        player.position.y - player.cameraHeight * 0.5 <
-                        topPosition
-                    ) {
-                        this.moveOutside(cell.mesh.position, player.position)
-                    }
-                    break
-                case 'X':
-                    this.moveOutside(cell.mesh.position, player.position)
-                    break
-            }
-        }
-    }
-
-    checkBulletCollision() {
-        var cell = new MapCell()
-        function removeBullet(bullet, i) {
-            this.scene.remove(bullet)
-            deadBulletPool.push(bullet)
-            bullets.splice(i, 1)
-        }
-        return function (bullet, i) {
-            if (bullet.player !== player && spheresOverlap(bullet, player)) {
-                hurt(bullet)
-                removeBullet(bullet, i)
-            }
-            for (var j = 0; j < numEnemies; j++) {
-                if (
-                    bullet.player !== enemies[j] &&
-                    spheresOverlap(bullet, enemies[j])
-                ) {
-                    enemies[j].health -= bullet.damage
-                    removeBullet(bullet, i)
-                    break
-                }
-            }
-            this.mapCellFromPosition(bullet.position, cell)
-            if (
-                cell.char == 'X' ||
-                (cell.char == 'T' &&
-                    bullet.position.y - Bullet.RADIUS <
-                        cell.mesh.position.y + this.VERTICAL_UNIT * 0.5) ||
-                bullet.position.y - Bullet.RADIUS < floor.position.y ||
-                bullet.position.y > this.VERTICAL_UNIT * 5
-            ) {
-                removeBullet(bullet, i)
-            }
-        }
-    }
-
-    mapCellFromPosition(position, cell) {
-        cell = cell || new MapCell()
-        var XOFFSET = (this.map.length + 1) * 0.5 * this.HORIZONTAL_UNIT,
-            ZOFFSET = (this.map[0].length + 1) * 0.5 * this.HORIZONTAL_UNIT
-        var mapCol =
-                Math.floor((position.x + XOFFSET) / this.HORIZONTAL_UNIT) - 1,
-            mapRow =
-                Math.floor((position.z + ZOFFSET) / this.HORIZONTAL_UNIT) - 1,
-            char = this.map[mapRow].charAt(mapCol),
-            mesh = this.meshMap[mapRow][mapCol]
-        cell.set(mapRow, mapCol, char, mesh)
-    }
-
-    moveOutside(meshPosition, playerPosition) {
-        var mw = this.HORIZONTAL_UNIT,
-            md = this.HORIZONTAL_UNIT,
-            mx = meshPosition.x - mw * 0.5,
-            mz = meshPosition.z - md * 0.5
-        var px = playerPosition.x,
-            pz = playerPosition.z
-        if (px > mx && px < mx + mw && pz > mz && pz < mz + md) {
-            var xOverlap = px - mx < mw * 0.5 ? px - mx : px - mx - mw,
-                zOverlap = pz - mz < md * 0.5 ? pz - mz : pz - mz - md
-            if (Math.abs(xOverlap) > Math.abs(zOverlap))
-                playerPosition.x -= xOverlap
-            else playerPosition.z -= zOverlap
-        }
-    }
-}
-
-class MapCell {
-    row: number
-    col: number
-    char: string
-    mesh: THREE.Mesh
-    setCell(row, col, char, mesh) {
-        this.row = row
-        this.col = col
-        this.char = char
-        this.mesh = mesh
     }
 }

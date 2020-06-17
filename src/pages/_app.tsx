@@ -13,7 +13,7 @@ function App({ Component, pages }) {
 App.getInitialProps = async () => {
     pages = pages.length > 0 ? [] : pages
     if (fs && typeof fs.readdirSync === 'function') {
-        const files: any = glob.sync('pages/**/*.tsx')
+        const files: any = glob.sync('src/pages/**/*.tsx')
         for (const file of files) {
             const filename = path.basename(file).split('.')[0]
             if (filename !== 'index' && filename !== '_app') {
