@@ -8,15 +8,15 @@
     "start": "next start"
   },
   "dependencies": {
-    "glob": "^7.1.6",
-    "next": "9.3.5",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "three": "^0.117.1"
+    "glob": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "three": "latest"
   },
   "devDependencies": {
-    "@types/node": "^14.0.13",
-    "@types/react": "^16.9.36",
-    "typescript": "^3.9.5"
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "typescript": "latest"
   }
 }
